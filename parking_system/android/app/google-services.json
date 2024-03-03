@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "57878741939",
+    "firebase_url": "https://parking-system-49d7c-default-rtdb.firebaseio.com",
+    "project_id": "parking-system-49d7c",
+    "storage_bucket": "parking-system-49d7c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:57878741939:android:e33306dc56dc02501c01c6",
+        "android_client_info": {
+          "package_name": "com.example.parking_system"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCItG7NazOFOEd5JFdVmONOvvdhMuLsTT8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
