@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Parking System',
-      home: HomePage(),
+      home: ParkingScreen(),
     );
   }
 }
