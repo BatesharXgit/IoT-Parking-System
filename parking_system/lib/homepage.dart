@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class ParkingScreen extends StatefulWidget {
@@ -7,18 +8,32 @@ class ParkingScreen extends StatefulWidget {
 }
 
 class _ParkingScreenState extends State<ParkingScreen> {
-  final databaseReference = FirebaseDatabase.instance.ref();
-  late List<String> sensors = ['ir3', 'ir4', 'ir5'];
+  final DatabaseReference _database = FirebaseDatabase.instance.reference();
+  Map<String, String> slotStatus = {
+    "Slot 1": "Loading...",
+    "Slot 2": "Loading...",
+    "Slot 3": "Loading...",
+  };
 
-  void bookSlot(String sensor) {
-    databaseReference.child('booking_status').update({
-      '$sensor\_booked': true,
-    });
+  @override
+  void initState() {
+    super.initState();
+    _listenToSlotChanges();
   }
 
-  void cancelBooking(String sensor) {
-    databaseReference.child('booking_status').update({
-      '$sensor\_booked': false,
+  void _listenToSlotChanges() {
+    _database.child('sensor_data').onValue.listen((event) {
+      if (event.snapshot.value != null) {
+        final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+        setState(() {
+          slotStatus["Slot 1"] =
+              data["Slot 1"]["value"] == 1 ? "Available" : "Booked";
+          slotStatus["Slot 2"] =
+              data["Slot 2"]["value"] == 1 ? "Available" : "Booked";
+          slotStatus["Slot 3"] =
+              data["Slot 3"]["value"] == 1 ? "Available" : "Booked";
+        });
+      }
     });
   }
 
@@ -28,59 +43,25 @@ class _ParkingScreenState extends State<ParkingScreen> {
       appBar: AppBar(
         title: Text('Parking System'),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: sensors
-                  .map(
-                    (sensor) => StreamBuilder<DatabaseEvent>(
-                      stream: databaseReference
-                          .child('booking_status/$sensor\_booked')
-                          .onValue,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          bool isBooked =
-                              snapshot.data!.snapshot.value as bool? ?? false;
-                          return Container(
-                            width: 100,
-                            height: 100,
-                            color: isBooked ? Colors.red : Colors.green,
-                            child: Center(
-                              child: Text(
-                                sensor.toUpperCase(),
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          );
-                        } else if (snapshot.hasError) {
-                          return Text('Error: ${snapshot.error}');
-                        } else {
-                          return CircularProgressIndicator();
-                        }
-                      },
-                    ),
-                  )
-                  .toList(),
-            ),
-            SizedBox(height: 20),
-            for (var sensor in sensors)
-              Column(
-                children: [
-                  ElevatedButton(
-                    onPressed: () => bookSlot(sensor),
-                    child: Text('Book Slot $sensor'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => cancelBooking(sensor),
-                    child: Text('Cancel Booking $sensor'),
-                  ),
-                  SizedBox(height: 10),
-                ],
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: slotStatus.entries.map((entry) {
+            return Card(
+              child: ListTile(
+                title: Text(entry.key),
+                subtitle: Text(entry.value),
+                leading: Icon(
+                  entry.value == "Available"
+                      ? Icons.check_circle
+                      : Icons.cancel,
+                  color: entry.value == "Available" ? Colors.green : Colors.red,
+                ),
               ),
-          ],
+            );
+          }).toList(),
         ),
       ),
     );
