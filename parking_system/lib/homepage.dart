@@ -55,9 +55,9 @@ class _ParkingScreenState extends State<ParkingScreen> {
                 subtitle: Text(entry.value),
                 leading: Icon(
                   entry.value == "Available"
-                      ? Icons.check_circle
-                      : Icons.cancel,
-                  color: entry.value == "Available" ? Colors.green : Colors.red,
+                      ? Icons.cancel
+                      : Icons.check_circle,
+                  color: entry.value == "Available" ? Colors.red : Colors.green,
                 ),
               ),
             );
