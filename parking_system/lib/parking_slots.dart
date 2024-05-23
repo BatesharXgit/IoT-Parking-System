@@ -11,20 +11,14 @@ class ParkingHomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: darkBlueColor,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(width: 20),
-            const Text(
-              "Smart Parking System",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
         centerTitle: true,
+        title: Text(
+          "Smart Parking System",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
       body: Padding(
         padding: EdgeInsets.all(8),

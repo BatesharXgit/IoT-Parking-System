@@ -15,6 +15,7 @@ class BookingPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: darkBlueColor,
+        centerTitle:true,
         title: const Text(
           "Book Slot",
           style: TextStyle(
@@ -25,7 +26,6 @@ class BookingPage extends StatelessWidget {
         iconTheme: const IconThemeData(
           color: Colors.white,
         ),
-        centerTitle: true,
       ),
       body: SafeArea(
           child: Padding(

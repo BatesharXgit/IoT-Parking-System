@@ -12,7 +12,7 @@ class ParkingController extends GetxController {
   RxDouble parkingTimeInMin = 10.0.obs;
   RxInt parkingAmount = 0.obs;
   RxString slotName = "".obs;
-  final DatabaseReference _database = FirebaseDatabase.instance.reference();
+  final DatabaseReference _database = FirebaseDatabase.instance.ref();
   var slot1 = Slot(booked: false, isOccupied: false, parkingHours: "0").obs;
   var slot2 = Slot(booked: false, isOccupied: false, parkingHours: "0").obs;
   var slot3 = Slot(booked: false, isOccupied: false, parkingHours: "0").obs;
@@ -73,6 +73,10 @@ class ParkingController extends GetxController {
     });
     // Show booking confirmation popup
     BookedPopup();
+
+    Future.delayed(const Duration(seconds: 20), () {
+      cancelBooking(slotId);
+    });
   }
 
   void cancelBooking(String slotId) async {

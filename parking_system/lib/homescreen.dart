@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> {
               ),
               ElevatedButton(
                 onPressed: () => Get.to(CarpoolingPage()),
-                child: Text('Carpooing Screen'),
+                child: Text('Carpooling Screen'),
               ),
             ],
           ),
