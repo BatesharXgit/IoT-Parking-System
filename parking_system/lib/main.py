@@ -97,12 +97,17 @@ try:
         ir4_booked = bool(ir4_booked)
         ir5_booked = bool(ir5_booked)
         
+        
         # Check IR sensors for vehicle presence
         ir1_value = ir_sensor_pin1.value()
         ir2_value = ir_sensor_pin2.value()
         ir3_value = ir_sensor_pin3.value()
         ir4_value = ir_sensor_pin4.value()
         ir5_value = ir_sensor_pin5.value()
+        
+        ir3_occupied = ir3_value
+        ir4_occupied = ir4_value
+        ir5_occupied = ir5_value
         
         # Debugging output
         print("IR Sensor Values before override:")
@@ -117,39 +122,39 @@ try:
         print(f"ir3: {ir3_value}, ir4: {ir4_value}, ir5: {ir5_value}")
         
         # Open gate if a vehicle is detected and slots are available
-        if ir1_value == 0:
+        if ir1_value == 1:
             # Rotate servo 1 (gate opening)
             for duty_cycle in range(4800, 500, -10):  # Adjusted from 4800 to 500
-                m2.duty_u16(duty_cycle)  # Using duty_u16 to set duty cycle
+                m1.duty_u16(duty_cycle)  # Using duty_u16 to set duty cycle
                 utime.sleep_ms(5)
             utime.sleep(2)
             for duty_cycle in range(500, 4800, 10):  # Adjusted from 500 to 4800
-                m2.duty_u16(duty_cycle)  # Using duty_u16 to set duty cycle
+                m1.duty_u16(duty_cycle)  # Using duty_u16 to set duty cycle
                 utime.sleep_ms(5)
-            m2.duty_u16(0)  # Stop servo
+            m1.duty_u16(0)  # Stop servo
         else:
-            m2.duty_u16(0)  # Stop servo
+            m1.duty_u16(0)  # Stop servo
         
         # Close gate if no vehicle is detected
-        if ir2_value == 0:
+        if ir2_value == 1:
             # Rotate servo 2 (gate closing)
             for duty_cycle in range(4800, 500, -10):  # Adjusted from 4800 to 500
-                m1.duty_u16(duty_cycle)  # Using duty_u16 to set duty cycle
+                m2.duty_u16(duty_cycle)  # Using duty_u16 to set duty cycle
                 utime.sleep_ms(5)
             utime.sleep(2)
             for duty_cycle in range(500, 4800, 10):  # Adjusted from 500 to 4800
-                m1.duty_u16(duty_cycle)  # Using duty_u16 to set duty cycle
+                m2.duty_u16(duty_cycle)  # Using duty_u16 to set duty cycle
                 utime.sleep_ms(5)
-            m1.duty_u16(0)  # Stop servo
+            m2.duty_u16(0)  # Stop servo
         else:
-            m1.duty_u16(0)  # Stop servo
+            m2.duty_u16(0)  # Stop servo
         
         # Prepare data for all slots
         timestamp_str = '{}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(*utime.localtime()[:6])
         sensor_data = {
-            "Slot 1": {"sensor_id": "Slot 1", "value": ir3_value, "timestamp": timestamp_str},
-            "Slot 2": {"sensor_id": "Slot 2", "value": ir4_value, "timestamp": timestamp_str},
-            "Slot 3": {"sensor_id": "Slot 3", "value": ir5_value, "timestamp": timestamp_str}
+            "Slot 1": {"sensor_id": "Slot 1", "value": ir3_value, "timestamp": timestamp_str, "isOccupied": ir3_occupied},
+            "Slot 2": {"sensor_id": "Slot 2", "value": ir4_value, "timestamp": timestamp_str, "isOccupied": ir4_occupied},
+            "Slot 3": {"sensor_id": "Slot 3", "value": ir5_value, "timestamp": timestamp_str, "isOccupied": ir5_occupied}
         }
         
         # Update Firebase with sensor data for all slots
@@ -165,4 +170,3 @@ finally:
     m2.duty_u16(0)
     m1.deinit()
     m2.deinit()
-

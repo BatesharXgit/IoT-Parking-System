@@ -61,7 +61,7 @@ class ParkingHomePage extends StatelessWidget {
                       () => ParkingSlot(
                         controller: parkingController,
                         isBooked: parkingController.slot1.value.booked,
-                        isParked: parkingController.slot1.value.isParked,
+                        isOccupied: parkingController.slot1.value.isOccupied,
                         slotName: "A-1",
                         slotId: "1",
                         time: parkingController.slot1.value.parkingHours,
@@ -83,11 +83,11 @@ class ParkingHomePage extends StatelessWidget {
                     child: Obx(
                       () => ParkingSlot(
                         controller: parkingController,
-                        isBooked: parkingController.slot2.value.booked,
-                        isParked: parkingController.slot2.value.isParked,
+                        isBooked: parkingController.slot3.value.booked,
+                        isOccupied: parkingController.slot3.value.isOccupied,
                         slotName: "A-3",
                         slotId: "3",
-                        time: parkingController.slot2.value.parkingHours,
+                        time: parkingController.slot3.value.parkingHours,
                         onBookNow: () =>
                             Get.to(BookingPage(slotId: "A-3", slotName: "3")),
                         cancelBooking: () => parkingController.bookSlot("3"),
@@ -103,11 +103,11 @@ class ParkingHomePage extends StatelessWidget {
                     child: Obx(
                       () => ParkingSlot(
                         controller: parkingController,
-                        isBooked: parkingController.slot3.value.booked,
-                        isParked: parkingController.slot3.value.isParked,
+                        isBooked: parkingController.slot2.value.booked,
+                        isOccupied: parkingController.slot2.value.isOccupied,
                         slotName: "A-2",
                         slotId: "2",
-                        time: parkingController.slot3.value.parkingHours,
+                        time: parkingController.slot2.value.parkingHours,
                         onBookNow: () =>
                             Get.to(BookingPage(slotId: "A-2", slotName: "2")),
                         cancelBooking: () => parkingController.bookSlot("2"),
@@ -125,7 +125,7 @@ class ParkingHomePage extends StatelessWidget {
 }
 
 class ParkingSlot extends StatelessWidget {
-  final bool? isParked;
+  final bool? isOccupied;
   final bool? isBooked;
   final String? slotName;
   final String slotId;
@@ -136,7 +136,7 @@ class ParkingSlot extends StatelessWidget {
 
   const ParkingSlot({
     Key? key,
-    this.isParked,
+    this.isOccupied,
     this.isBooked,
     this.slotName,
     this.slotId = "0.0",
@@ -148,6 +148,7 @@ class ParkingSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("isOccupied${isOccupied}");
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -160,13 +161,13 @@ class ParkingSlot extends StatelessWidget {
         child: Column(
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                time == ""
-                    ? SizedBox(width: 1)
-                    : Container(
-                        child: Text(time),
-                      ),
+                // time == ""
+                //     ? SizedBox(width: 1)
+                //     : Container(
+                //         child: Text(time),
+                //       ),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     vertical: 15,
@@ -195,7 +196,23 @@ class ParkingSlot extends StatelessWidget {
               ],
             ),
             SizedBox(height: 40),
-            if (isBooked == true)
+            if (isBooked == true && isOccupied == true)
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Occupied",
+                      style: TextStyle(
+                        color: Colors.red.shade400,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (isBooked == true)
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

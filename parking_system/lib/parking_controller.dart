@@ -13,9 +13,9 @@ class ParkingController extends GetxController {
   RxInt parkingAmount = 0.obs;
   RxString slotName = "".obs;
   final DatabaseReference _database = FirebaseDatabase.instance.reference();
-  var slot1 = Slot(booked: false, isParked: false, parkingHours: "0").obs;
-  var slot2 = Slot(booked: false, isParked: false, parkingHours: "0").obs;
-  var slot3 = Slot(booked: false, isParked: false, parkingHours: "0").obs;
+  var slot1 = Slot(booked: false, isOccupied: false, parkingHours: "0").obs;
+  var slot2 = Slot(booked: false, isOccupied: false, parkingHours: "0").obs;
+  var slot3 = Slot(booked: false, isOccupied: false, parkingHours: "0").obs;
 
   var parkingStartTime = DateTime.now().obs;
   var parkingEndTime = DateTime.now().obs;
@@ -46,17 +46,17 @@ class ParkingController extends GetxController {
         final data = Map<String, dynamic>.from(event.snapshot.value as Map);
         slot1.update((val) {
           val?.booked = data["Slot 1"]["value"] != 1;
-          val?.isParked = data["Slot 1"]["value"] == 2;
-          val?.parkingHours = data["Slot 1"]['timestamp'].toString() ?? "N/A"; // Update with actual data if available
+          val?.isOccupied = data["Slot 1"]["isOccupied"] == 0;
+          val?.parkingHours = data["Slot 1"]['timestamp'].toString() ?? "N/A";
         });
         slot2.update((val) {
           val?.booked = data["Slot 2"]["value"] != 1;
-          val?.isParked = data["Slot 2"]["value"] == 2;
+          val?.isOccupied = data["Slot 2"]["isOccupied"] == 0;
           val?.parkingHours = "N/A"; // Update with actual data if available
         });
         slot3.update((val) {
           val?.booked = data["Slot 3"]["value"] != 1;
-          val?.isParked = data["Slot 3"]["value"] == 2;
+          val?.isOccupied = data["Slot 3"]["isOccupied"] == 0;
           val?.parkingHours = "N/A"; // Update with actual data if available
         });
       }
@@ -252,11 +252,12 @@ class ParkingController extends GetxController {
 
 class Slot {
   bool booked;
-  bool isParked;
+  bool isOccupied;
+
   String parkingHours;
 
   Slot(
       {required this.booked,
-      required this.isParked,
+      required this.isOccupied,
       required this.parkingHours});
 }
