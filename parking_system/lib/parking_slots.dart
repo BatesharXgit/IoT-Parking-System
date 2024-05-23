@@ -69,7 +69,7 @@ class ParkingHomePage extends StatelessWidget {
                     width: 60,
                     height: 60,
                     child: VerticalDivider(
-                      color: darkBlueColor,
+                      color: Colors.white,
                       thickness: 6,
                     ),
                   ),
@@ -146,7 +146,7 @@ class ParkingSlot extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: Color.fromARGB(255, 222, 222, 227),
+        color: Theme.of(context).colorScheme.primaryContainer,
       ),
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -236,7 +236,7 @@ class ParkingSlot extends StatelessWidget {
                         ),
                         child: Container(
                           padding: EdgeInsets.symmetric(
-                            vertical: 7,
+                            vertical: 14,
                             horizontal: 30,
                           ),
                           decoration: BoxDecoration(
@@ -254,31 +254,31 @@ class ParkingSlot extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(
-                        height: 1,
-                      ),
-                      InkWell(
-                        onTap: () => controller.cancelBooking(slotId),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            vertical: 7,
-                            horizontal: 30,
-                          ),
-                          decoration: BoxDecoration(
-                            color: darkBlueColor,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Text(
-                            "Cancel",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        ),
-                      ),
+                      // SizedBox(
+                      //   height: 1,
+                      // ),
+                      // InkWell(
+                      //   onTap: () => controller.cancelBooking(slotId),
+                      //   child: Container(
+                      //     padding: EdgeInsets.symmetric(
+                      //       vertical: 7,
+                      //       horizontal: 30,
+                      //     ),
+                      //     decoration: BoxDecoration(
+                      //       color: darkBlueColor,
+                      //       borderRadius: BorderRadius.circular(10),
+                      //     ),
+                      //     child: const Text(
+                      //       "Cancel",
+                      //       style: TextStyle(
+                      //         color: Colors.white,
+                      //         fontSize: 15,
+                      //         fontWeight: FontWeight.w500,
+                      //         letterSpacing: 1.2,
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),

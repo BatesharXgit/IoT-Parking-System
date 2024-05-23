@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
+import 'package:parking_system/Config/myTheme.dart';
 import 'package:parking_system/authentication/auth_path.dart';
 import 'package:parking_system/firebase_options.dart';
 import 'package:parking_system/homescreen.dart';
@@ -20,7 +21,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Parking System',
+      title: 'Smart Parking System',
+      theme: lightTheme,
+      debugShowCheckedModeBanner: false,
+      darkTheme: darkTheme,
+      themeMode: ThemeMode.light,
       home: AuthPage(),
     );
   }
