@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -9,7 +10,6 @@ class CarpoolingPage extends StatefulWidget {
 
 class _CarpoolingPageState extends State<CarpoolingPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final TextEditingController riderNameController = TextEditingController();
   final TextEditingController riderPhoneController = TextEditingController();
   final TextEditingController rideDetailsController = TextEditingController();
   final TextEditingController startPlaceController = TextEditingController();
@@ -103,6 +103,16 @@ class _CarpoolingPageState extends State<CarpoolingPage> {
   }
 
   void _showCreateCarpoolDialog() {
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+    final String? riderName = currentUser?.displayName;
+
+    if (riderName == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: User not logged in')),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (context) {
@@ -115,10 +125,11 @@ class _CarpoolingPageState extends State<CarpoolingPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
-                      controller: riderNameController,
+                      controller: TextEditingController(text: riderName),
                       decoration: InputDecoration(
                         labelText: 'Rider Name',
                       ),
+                      readOnly: true,
                     ),
                     TextField(
                       controller: riderPhoneController,
@@ -254,8 +265,7 @@ class _CarpoolingPageState extends State<CarpoolingPage> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    if (riderNameController.text.isEmpty ||
-                        riderPhoneController.text.isEmpty ||
+                    if (riderPhoneController.text.isEmpty ||
                         rideDetailsController.text.isEmpty ||
                         startPlaceController.text.isEmpty ||
                         destinationPlaceController.text.isEmpty ||
@@ -269,7 +279,7 @@ class _CarpoolingPageState extends State<CarpoolingPage> {
                       return;
                     }
 
-                    _createCarpool();
+                    _createCarpool(riderName);
                     Navigator.of(context).pop();
                   },
                   child: Text('Create'),
@@ -282,7 +292,7 @@ class _CarpoolingPageState extends State<CarpoolingPage> {
     );
   }
 
-  void _createCarpool() async {
+  void _createCarpool(String riderName) async {
     DateTime journeyStartDateTime = DateTime(
       _selectedDate!.year,
       _selectedDate!.month,
@@ -292,7 +302,7 @@ class _CarpoolingPageState extends State<CarpoolingPage> {
     );
 
     await _firestore.collection('carpooling').add({
-      'riderName': riderNameController.text,
+      'riderName': riderName,
       'riderPhone': riderPhoneController.text,
       'rideDetails': rideDetailsController.text,
       'startPlace': startPlaceController.text,
@@ -300,10 +310,9 @@ class _CarpoolingPageState extends State<CarpoolingPage> {
       'journeyStartDateTime':
           DateFormat('yyyy-MM-dd – kk:mm').format(journeyStartDateTime),
       'requests': [],
-      'createdBy': 'abc', // Add createdBy field
+      'createdBy': FirebaseAuth.instance.currentUser!.uid,
     });
 
-    riderNameController.clear();
     riderPhoneController.clear();
     rideDetailsController.clear();
     startPlaceController.clear();
@@ -330,7 +339,7 @@ class _CarpoolingPageState extends State<CarpoolingPage> {
   void _requestToJoinCarpool(String id) async {
     final doc = await _firestore.collection('carpooling').doc(id).get();
     List requests = doc['requests'] as List? ?? [];
-    requests.add('User XYZ'); // Replace with actual user data
+    requests.add(FirebaseAuth.instance.currentUser!.displayName);
 
     await _firestore
         .collection('carpooling')
