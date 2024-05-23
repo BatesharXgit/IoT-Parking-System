@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:parking_system/firebase_options.dart';
-import 'package:parking_system/homepage.dart';
+import 'package:parking_system/homescreen.dart';
 import 'package:parking_system/parking_slots.dart';
 
 void main() async {
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Parking System',
-      home: ParkingHomePage(),
+      home: HomePage(),
     );
   }
 }
