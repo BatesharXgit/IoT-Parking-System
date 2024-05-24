@@ -16,13 +16,15 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF131321),
+      // backgroundColor: const Color(0xFF131321),
       body: Stack(
         children: [
           Container(
+            // height: 500,
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/bg.jpg'),
+                image: NetworkImage(
+                    'https://i.pinimg.com/474x/94/66/bf/9466bf53930e1d745ef3a17404f0d303.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -79,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
                             child: SizedBox(
                               width: MediaQuery.of(context).size.width / 2 + 50,
                               child: Text(
-                                "Explore thousand of cool wallpaper for free",
+                                '''Welcome to the "QuicPark" - A Smart Parking System''',
                                 textAlign: TextAlign.left,
                                 style: GoogleFonts.kanit(
                                   color: Colors.white,

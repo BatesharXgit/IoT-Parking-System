@@ -1,7 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/widgets.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:parking_system/Config/Colors.dart';
+import 'package:parking_system/pages/booking_page.dart';
+import 'package:parking_system/pages/parking_home.dart';
 
 class CarpoolingPage extends StatefulWidget {
   const CarpoolingPage({super.key});
@@ -179,56 +184,7 @@ class CarpoolList extends StatelessWidget {
   }
 }
 
-// class CarpoolCard extends StatelessWidget {
-//   final QueryDocumentSnapshot carpool;
-//   final VoidCallback onDelete;
-//   final VoidCallback onJoin;
-//   final String currentUserUID;
-
-//   const CarpoolCard({
-//     super.key,
-//     required this.carpool,
-//     required this.onDelete,
-//     required this.onJoin,
-//     required this.currentUserUID,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Card(
-//       shadowColor: Colors.blue,
-//       elevation: 6,
-//       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-//       child: ListTile(
-//         title: Text(
-//           carpool['riderName'],
-//           style: const TextStyle(fontWeight: FontWeight.bold),
-//         ),
-//         subtitle: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             Text('Details: ${carpool['rideDetails']}'),
-//             Text('Contact: ${carpool['riderPhone']}'),
-//             Text('Start: ${carpool['startPlace']}'),
-//             Text('Destination: ${carpool['destinationPlace']}'),
-//             Text('Journey Date: ${carpool['journeyStartDateTime']}'),
-//           ],
-//         ),
-//         trailing: (currentUserUID == carpool['createdByUserUID'])
-//             ? IconButton(
-//                 icon: const Icon(Icons.delete, color: Colors.red),
-//                 onPressed: onDelete,
-//               )
-//             : IconButton(
-//                 icon: const Icon(Icons.add, color: Colors.green),
-//                 onPressed: onJoin,
-//               ),
-//       ),
-//     );
-//   }
-// }
-
-class CarpoolCard extends StatelessWidget {
+class CarpoolCard extends StatefulWidget {
   final QueryDocumentSnapshot carpool;
   final VoidCallback onDelete;
   final VoidCallback onJoin;
@@ -242,48 +198,119 @@ class CarpoolCard extends StatelessWidget {
     required this.currentUserUID,
   });
 
+  @override
+  State<CarpoolCard> createState() => _CarpoolCardState();
+}
+
+class _CarpoolCardState extends State<CarpoolCard> {
+  final _formKey = GlobalKey<FormState>();
+  String name = '';
+  String phone = '';
+
   void _showDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Carpool Details'),
-          content: currentUserUID == carpool['createdByUserUID']
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: (carpool['requests'] as List<dynamic>)
-                      .map((request) => Text(
-                          'Name: ${request['name']}, Phone: ${request['phone']}'))
-                      .toList(),
-                )
-              : const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      decoration: InputDecoration(labelText: 'Name'),
-                    ),
-                    TextField(
-                      decoration: InputDecoration(labelText: 'Phone Number'),
-                    ),
-                  ],
-                ),
-          actions: <Widget>[
-            currentUserUID == carpool['createdByUserUID']
-                ? TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Close'),
+        return (widget.currentUserUID != widget.carpool['createdByUserUID'])
+            ? ((widget.carpool['requests'].any(
+                    (map) => map['requestedByUserID'] == widget.currentUserUID))
+                ? AlertDialog(
+                    title: Text('Join Request Status'),
+                    content: widget.carpool['requests'].firstWhere(
+                      (map) =>
+                          map['requestedByUserID'] == widget.currentUserUID,
+                      orElse: () => null,
+                    )['accepted']
+                        ? Text(
+                            'Accepted',
+                            style: TextStyle(color: greenColor),
+                          )
+                        : Text(
+                            'Pending',
+                            style: TextStyle(color: Colors.red),
+                          ),
                   )
-                : TextButton(
-                    onPressed: () {
-                      // handle the join logic here
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Join'),
-                  ),
-          ],
-        );
+                : AlertDialog(
+                    // backgroundColor: Theme.of(context).colorScheme.,
+                    title: Text('Join Carpool'),
+                    content: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          TextFormField(
+                            decoration: InputDecoration(labelText: 'Name'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your name';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              name = value ?? '';
+                            },
+                          ),
+                          TextFormField(
+                            decoration:
+                                InputDecoration(labelText: 'Phone Number'),
+                            keyboardType: TextInputType.phone,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your phone number';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              phone = value ?? '';
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            _formKey.currentState!.save();
+                            Map<String, dynamic> newRequest = {
+                              'name': name,
+                              'phone': phone,
+                              'requestedByUserID': widget.currentUserUID,
+                              'accepted': false,
+                            };
+                            // Add the new request to the carpool's requests
+                            widget.carpool.reference.update({
+                              'requests': FieldValue.arrayUnion([newRequest])
+                            });
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        child: Text('Submit'),
+                      ),
+                    ],
+                  ))
+            : AlertDialog(
+                title: Text('Requests'),
+                content: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: widget.carpool['requests'].length,
+                  itemBuilder: (context, index) {
+                    final request = widget.carpool['requests'][index];
+                    return Card(
+                      child: ListTile(
+                        title: Text(request['name']),
+                        subtitle: Text(request['phone']),
+                      ),
+                    );
+                  },
+                ),
+              );
       },
     );
   }
@@ -298,28 +325,39 @@ class CarpoolCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         child: ListTile(
           title: Text(
-            carpool['riderName'],
+            widget.carpool['riderName'],
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Details: ${carpool['rideDetails']}'),
-              Text('Contact: ${carpool['riderPhone']}'),
-              Text('Start: ${carpool['startPlace']}'),
-              Text('Destination: ${carpool['destinationPlace']}'),
-              Text('Journey Date: ${carpool['journeyStartDateTime']}'),
+              Text('Details: ${widget.carpool['rideDetails']}'),
+              Text('Contact: ${widget.carpool['riderPhone']}'),
+              Text('Start: ${widget.carpool['startPlace']}'),
+              Text('Destination: ${widget.carpool['destinationPlace']}'),
+              Text('Journey Date: ${widget.carpool['journeyStartDateTime']}'),
+              if (widget.currentUserUID == widget.carpool['createdByUserUID'])
+                SizedBox(
+                  height: 10,
+                ),
+              if (widget.currentUserUID == widget.carpool['createdByUserUID'])
+                ElevatedButton(
+                    onPressed: () => Get.to(ParkingHomePage()),
+                    child: Text('Book Parking'))
             ],
           ),
-          trailing: (currentUserUID == carpool['createdByUserUID'])
-              ? IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: onDelete,
-                )
-              : IconButton(
-                  icon: const Icon(Icons.add, color: Colors.green),
-                  onPressed: onJoin,
-                ),
+          trailing:
+              (widget.currentUserUID == widget.carpool['createdByUserUID'])
+                  ? IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: widget.onDelete,
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.add, color: Colors.green),
+                      onPressed: () {
+                        _showDialog(context);
+                      },
+                    ),
         ),
       ),
     );
