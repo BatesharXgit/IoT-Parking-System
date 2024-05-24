@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:parking_system/config.dart';
-import 'package:parking_system/parking_controller.dart';
+import 'package:parking_system/controller/parking_controller.dart';
 
 class BookingPage extends StatelessWidget {
   final String slotName;
@@ -15,7 +15,7 @@ class BookingPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: darkBlueColor,
-        centerTitle:true,
+        centerTitle: true,
         title: const Text(
           "Book Slot",
           style: TextStyle(
@@ -49,20 +49,36 @@ class BookingPage extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
-                      controller: parkingController.name,
-                      decoration: const InputDecoration(
-                        fillColor: lightBg,
-                        filled: true,
-                        border: InputBorder.none,
-                        prefixIcon: Icon(
-                          Icons.person,
-                          color: darkBlueColor,
-                        ),
-                        hintText: "Name",
+                      child: TextFormField(
+                    controller: parkingController.name,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: lightBg,
+                      hintText: "Name",
+                      prefixIcon: Icon(
+                        Icons.car_rental,
+                        color: darkBlueColor,
                       ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide:
+                            BorderSide(color: darkBlueColor, width: 2.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide(width: 1.0),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                          vertical: 16.0, horizontal: 16.0),
+                      hintStyle: TextStyle(color: Colors.grey[500]),
                     ),
-                  )
+                    style: TextStyle(color: darkBlueColor, fontSize: 16.0),
+                    cursorColor: darkBlueColor,
+                  ))
                 ],
               ),
               SizedBox(height: 30),
@@ -77,20 +93,36 @@ class BookingPage extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
-                      controller: parkingController.vehicalNumber,
-                      decoration: const InputDecoration(
-                        fillColor: lightBg,
-                        filled: true,
-                        border: InputBorder.none,
-                        prefixIcon: Icon(
-                          Icons.car_rental,
-                          color: darkBlueColor,
-                        ),
-                        hintText: "00 00 0 0000",
+                      child: TextFormField(
+                    controller: parkingController.vehicalNumber,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: lightBg,
+                      hintText: "00 00 0 0000",
+                      prefixIcon: Icon(
+                        Icons.car_rental,
+                        color: darkBlueColor,
                       ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide:
+                            BorderSide(color: darkBlueColor, width: 2.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide(width: 1.0),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                          vertical: 16.0, horizontal: 16.0),
+                      hintStyle: TextStyle(color: Colors.grey[500]),
                     ),
-                  )
+                    style: TextStyle(color: darkBlueColor, fontSize: 16.0),
+                    cursorColor: darkBlueColor,
+                  ))
                 ],
               ),
               SizedBox(height: 20),
@@ -186,6 +218,17 @@ class BookingPage extends StatelessWidget {
                                     pickedTime.minute,
                                   );
                                   parkingController.calculateAmount();
+
+                                  DateTime startTime =
+                                      parkingController.parkingStartTime.value;
+                                  DateTime endTime =
+                                      parkingController.parkingEndTime.value;
+                                  Duration difference =
+                                      endTime.difference(startTime);
+
+                                  Future.delayed(difference, () {
+                                    parkingController.cancelBooking(slotId);
+                                  });
                                 }
                               }
                             },
@@ -244,7 +287,7 @@ class BookingPage extends StatelessWidget {
                           Icon(
                             Icons.currency_rupee,
                             size: 30,
-                            color: darkBlueColor,
+                            color: Theme.of(context).colorScheme.onBackground,
                           ),
                           Obx(
                             () => Text(
@@ -252,7 +295,8 @@ class BookingPage extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 40,
                                 fontWeight: FontWeight.w700,
-                                color: darkBlueColor,
+                                color:
+                                    Theme.of(context).colorScheme.onBackground,
                               ),
                             ),
                           )

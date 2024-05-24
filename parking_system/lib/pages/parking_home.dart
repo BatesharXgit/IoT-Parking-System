@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:parking_system/booking_page.dart';
+import 'package:parking_system/pages/booking_page.dart';
 import 'package:parking_system/config.dart';
-import 'package:parking_system/parking_controller.dart';
+import 'package:parking_system/controller/parking_controller.dart';
 
 class ParkingHomePage extends StatelessWidget {
   @override
@@ -65,11 +65,11 @@ class ParkingHomePage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(
+                  SizedBox(
                     width: 60,
                     height: 60,
                     child: VerticalDivider(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onBackground,
                       thickness: 6,
                     ),
                   ),
@@ -107,6 +107,17 @@ class ParkingHomePage extends StatelessWidget {
                         cancelBooking: () => parkingController.bookSlot("2"),
                       ),
                     ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Column(
+                    children: [Text("EXIT"), Icon(Icons.keyboard_arrow_down)],
                   ),
                 ],
               ),
@@ -172,6 +183,7 @@ class ParkingSlot extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     border: Border.all(
+                      width: 2,
                       color: Colors.black,
                     ),
                     borderRadius: BorderRadius.circular(20),

@@ -4,8 +4,8 @@ import 'package:get/get.dart';
 import 'package:parking_system/Config/myTheme.dart';
 import 'package:parking_system/authentication/auth_path.dart';
 import 'package:parking_system/firebase_options.dart';
-import 'package:parking_system/homescreen.dart';
-import 'package:parking_system/parking_slots.dart';
+import 'package:parking_system/pages/homescreen.dart';
+import 'package:parking_system/pages/parking_home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -64,19 +64,17 @@ class ParkingController extends GetxController {
   }
 
   void bookSlot(String slotId) async {
-    // Update the slot booking status in Firebase
     await _database.child('booking_status').update({
       'Slot $slotId': {
         'booked': 1,
         'parkingTime': parkingTimeInMin.value,
       }
     });
-    // Show booking confirmation popup
     BookedPopup();
 
-    Future.delayed(const Duration(seconds: 20), () {
-      cancelBooking(slotId);
-    });
+    // Future.delayed(const Duration(seconds: 60), () {
+    //   cancelBooking(slotId);
+    // });
   }
 
   void cancelBooking(String slotId) async {

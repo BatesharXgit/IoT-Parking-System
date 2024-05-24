@@ -4,8 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 class CarpoolingPage extends StatefulWidget {
+  const CarpoolingPage({super.key});
+
   @override
-  _CarpoolingPageState createState() => _CarpoolingPageState();
+  State<CarpoolingPage> createState() => _CarpoolingPageState();
 }
 
 class _CarpoolingPageState extends State<CarpoolingPage> {
@@ -16,12 +18,12 @@ class _CarpoolingPageState extends State<CarpoolingPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Carpooling'),
+        title: const Text('Carpooling'),
       ),
       body: CarpoolList(firestore: _firestore),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showCreateCarpoolDialog(context, _firestore),
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -30,55 +32,60 @@ class _CarpoolingPageState extends State<CarpoolingPage> {
 class CarpoolList extends StatelessWidget {
   final FirebaseFirestore firestore;
 
-  CarpoolList({required this.firestore});
+  const CarpoolList({super.key, required this.firestore});
 
   @override
   Widget build(BuildContext context) {
+    return ListView(
+      children: [
+        createdCarpoolsExtensionTile(),
+        const SizedBox(height: 10),
+        otherCarpools(),
+      ],
+    );
+  }
+
+  Widget createdCarpoolsExtensionTile() {
     return StreamBuilder<QuerySnapshot>(
       stream: firestore
           .collection('carpooling')
-          .where('createdBy', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+          .where('createdByUserUID',
+              isEqualTo: FirebaseAuth.instance.currentUser!.uid)
           .orderBy('createdOn', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(child: Text('No carpooling rides available.'));
+          return SingleChildScrollView(
+            child: ExpansionTile(
+              backgroundColor: Colors.blue.withOpacity(0.4),
+              // initiallyExpanded: true,
+              collapsedBackgroundColor: Colors.blue.withOpacity(0.2),
+              title: const Text('Created Carpools'),
+              children: const [],
+            ),
+          );
         }
 
         final carpools = snapshot.data!.docs;
-        return Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: SingleChildScrollView(
-            child: Row(
-              children: [
-                CreatedCarpoolsExpansionTile(carpools),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  ExpansionTile CreatedCarpoolsExpansionTile(List<QueryDocumentSnapshot<Object?>> carpools) {
-    return ExpansionTile(
+        return SingleChildScrollView(
+          child: ExpansionTile(
             backgroundColor: Colors.blue.withOpacity(0.4),
-            initiallyExpanded: true,
+            // initiallyExpanded: true,
             collapsedBackgroundColor: Colors.blue.withOpacity(0.2),
-            title: Text('Created Carpools'),
+            title: const Text('Created Carpools'),
             children: [
               ListView.builder(
                 shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: carpools.length,
                 itemBuilder: (context, index) {
                   final carpool = carpools[index];
                   return CarpoolCard(
                     carpool: carpool,
-                    userUID: FirebaseAuth.instance.currentUser!.uid,
+                    currentUserUID: FirebaseAuth.instance.currentUser!.uid,
                     onDelete: () =>
                         _deleteCarpool(carpool.id, firestore, context),
                     onJoin: () =>
@@ -87,14 +94,72 @@ class CarpoolList extends StatelessWidget {
                 },
               ),
             ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget otherCarpools() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: firestore
+          .collection('carpooling')
+          .where('createdByUserUID',
+              isNotEqualTo: FirebaseAuth.instance.currentUser!.uid)
+          .orderBy('createdOn', descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return SingleChildScrollView(
+            child: ExpansionTile(
+              backgroundColor: Colors.blue.withOpacity(0.4),
+              // initiallyExpanded: true,
+              collapsedBackgroundColor: Colors.blue.withOpacity(0.2),
+              title: const Text('Other Carpools'),
+              children: const [],
+            ),
           );
+        }
+
+        final carpools = snapshot.data!.docs;
+        return SingleChildScrollView(
+          child: ExpansionTile(
+            backgroundColor: Colors.blue.withOpacity(0.4),
+            // initiallyExpanded: true,
+            collapsedBackgroundColor: Colors.blue.withOpacity(0.2),
+            title: const Text('Other Carpools'),
+            children: [
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: carpools.length,
+                itemBuilder: (context, index) {
+                  final carpool = carpools[index];
+                  return CarpoolCard(
+                    carpool: carpool,
+                    currentUserUID: FirebaseAuth.instance.currentUser!.uid,
+                    onDelete: () =>
+                        _deleteCarpool(carpool.id, firestore, context),
+                    onJoin: () =>
+                        _requestToJoinCarpool(carpool.id, firestore, context),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _deleteCarpool(
       String id, FirebaseFirestore firestore, BuildContext context) async {
     await firestore.collection('carpooling').doc(id).delete();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Carpool deleted successfully')),
+      const SnackBar(content: Text('Carpool deleted successfully')),
     );
   }
 
@@ -109,55 +174,153 @@ class CarpoolList extends StatelessWidget {
         .doc(id)
         .update({'requests': requests});
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Request to join carpool sent')),
+      const SnackBar(content: Text('Request to join carpool sent')),
     );
   }
 }
+
+// class CarpoolCard extends StatelessWidget {
+//   final QueryDocumentSnapshot carpool;
+//   final VoidCallback onDelete;
+//   final VoidCallback onJoin;
+//   final String currentUserUID;
+
+//   const CarpoolCard({
+//     super.key,
+//     required this.carpool,
+//     required this.onDelete,
+//     required this.onJoin,
+//     required this.currentUserUID,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Card(
+//       shadowColor: Colors.blue,
+//       elevation: 6,
+//       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+//       child: ListTile(
+//         title: Text(
+//           carpool['riderName'],
+//           style: const TextStyle(fontWeight: FontWeight.bold),
+//         ),
+//         subtitle: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text('Details: ${carpool['rideDetails']}'),
+//             Text('Contact: ${carpool['riderPhone']}'),
+//             Text('Start: ${carpool['startPlace']}'),
+//             Text('Destination: ${carpool['destinationPlace']}'),
+//             Text('Journey Date: ${carpool['journeyStartDateTime']}'),
+//           ],
+//         ),
+//         trailing: (currentUserUID == carpool['createdByUserUID'])
+//             ? IconButton(
+//                 icon: const Icon(Icons.delete, color: Colors.red),
+//                 onPressed: onDelete,
+//               )
+//             : IconButton(
+//                 icon: const Icon(Icons.add, color: Colors.green),
+//                 onPressed: onJoin,
+//               ),
+//       ),
+//     );
+//   }
+// }
 
 class CarpoolCard extends StatelessWidget {
   final QueryDocumentSnapshot carpool;
   final VoidCallback onDelete;
   final VoidCallback onJoin;
-  final String userUID;
+  final String currentUserUID;
 
-  CarpoolCard({
+  const CarpoolCard({
+    super.key,
     required this.carpool,
     required this.onDelete,
     required this.onJoin,
-    required this.userUID,
+    required this.currentUserUID,
   });
+
+  void _showDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Carpool Details'),
+          content: currentUserUID == carpool['createdByUserUID']
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: (carpool['requests'] as List<dynamic>)
+                      .map((request) => Text(
+                          'Name: ${request['name']}, Phone: ${request['phone']}'))
+                      .toList(),
+                )
+              : const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      decoration: InputDecoration(labelText: 'Name'),
+                    ),
+                    TextField(
+                      decoration: InputDecoration(labelText: 'Phone Number'),
+                    ),
+                  ],
+                ),
+          actions: <Widget>[
+            currentUserUID == carpool['createdByUserUID']
+                ? TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Close'),
+                  )
+                : TextButton(
+                    onPressed: () {
+                      // handle the join logic here
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Join'),
+                  ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shadowColor: Colors.blue,
-      elevation: 6,
-      // color: Colors.blue,
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      child: ListTile(
-        title: Text(
-          carpool['riderName'],
-          style: TextStyle(fontWeight: FontWeight.bold),
+    return GestureDetector(
+      onTap: () => _showDialog(context),
+      child: Card(
+        shadowColor: Colors.blue,
+        elevation: 6,
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: ListTile(
+          title: Text(
+            carpool['riderName'],
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Details: ${carpool['rideDetails']}'),
+              Text('Contact: ${carpool['riderPhone']}'),
+              Text('Start: ${carpool['startPlace']}'),
+              Text('Destination: ${carpool['destinationPlace']}'),
+              Text('Journey Date: ${carpool['journeyStartDateTime']}'),
+            ],
+          ),
+          trailing: (currentUserUID == carpool['createdByUserUID'])
+              ? IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: onDelete,
+                )
+              : IconButton(
+                  icon: const Icon(Icons.add, color: Colors.green),
+                  onPressed: onJoin,
+                ),
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Details: ${carpool['rideDetails']}'),
-            Text('Contact: ${carpool['riderPhone']}'),
-            Text('Start: ${carpool['startPlace']}'),
-            Text('Destination: ${carpool['destinationPlace']}'),
-            Text('Journey Date: ${carpool['journeyStartDateTime']}'),
-          ],
-        ),
-        trailing: (userUID == carpool['createdBy'])
-            ? IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
-                onPressed: onDelete,
-              )
-            : IconButton(
-                icon: Icon(Icons.add, color: Colors.green),
-                onPressed: onJoin,
-              ),
       ),
     );
   }
@@ -209,18 +372,18 @@ void showCreateCarpoolDialog(
       'journeyStartDateTime':
           DateFormat('yyyy-MM-dd – kk:mm').format(journeyStartDateTime),
       'requests': [],
-      'createdBy': FirebaseAuth.instance.currentUser!.uid,
+      'createdByUserUID': FirebaseAuth.instance.currentUser!.uid,
       'createdOn': Timestamp.now(),
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Carpool created successfully')),
+      const SnackBar(content: Text('Carpool created successfully')),
     );
   }
 
   if (riderName == null) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error: User not logged in')),
+      const SnackBar(content: Text('Error: User not logged in')),
     );
     return;
   }
@@ -231,51 +394,51 @@ void showCreateCarpoolDialog(
       return StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            title: Text('Create Carpool'),
+            title: const Text('Create Carpool'),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: TextEditingController(text: riderName),
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Rider Name',
                     ),
                     readOnly: true,
                   ),
                   TextField(
                     controller: riderPhoneController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Rider Phone',
                     ),
                     keyboardType: TextInputType.phone,
                   ),
                   TextField(
                     controller: rideDetailsController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Ride Details',
                     ),
                     keyboardType: TextInputType.text,
                   ),
                   TextField(
                     controller: startPlaceController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Start Place',
                     ),
                     keyboardType: TextInputType.text,
                   ),
                   TextField(
                     controller: destinationPlaceController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Destination Place',
                     ),
                     keyboardType: TextInputType.text,
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
-                      Text("Date: "),
-                      SizedBox(width: 10),
+                      const Text("Date: "),
+                      const SizedBox(width: 10),
                       ElevatedButton(
                         onPressed: () async {
                           DateTime? pickedDate = await showDatePicker(
@@ -329,7 +492,7 @@ void showCreateCarpoolDialog(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('Cancel'),
+                child: const Text('Cancel'),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -342,7 +505,8 @@ void showCreateCarpoolDialog(
                       selectedMinute == null ||
                       selectedAmPm == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Please fill in all fields')),
+                      const SnackBar(
+                          content: Text('Please fill in all fields')),
                     );
                     return;
                   }
@@ -361,7 +525,7 @@ void showCreateCarpoolDialog(
                   );
                   Navigator.of(context).pop();
                 },
-                child: Text('Create'),
+                child: const Text('Create'),
               ),
             ],
           );
@@ -382,7 +546,8 @@ class TimePicker extends StatelessWidget {
   final ValueChanged<int?> onMinuteChanged;
   final ValueChanged<String?> onAmPmChanged;
 
-  TimePicker({
+  const TimePicker({
+    super.key,
     required this.hours,
     required this.minutes,
     required this.amPm,
@@ -403,7 +568,7 @@ class TimePicker extends StatelessWidget {
           width: 60,
           child: DropdownButtonFormField<int>(
             isExpanded: true,
-            hint: Text('00'),
+            hint: const Text('00'),
             value: selectedHour,
             onChanged: onHourChanged,
             items: hours.map((hour) {
@@ -414,12 +579,12 @@ class TimePicker extends StatelessWidget {
             }).toList(),
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         SizedBox(
           width: 60,
           child: DropdownButtonFormField<int>(
             isExpanded: true,
-            hint: Text('00'),
+            hint: const Text('00'),
             value: selectedMinute,
             onChanged: onMinuteChanged,
             items: minutes.map((minute) {
@@ -430,12 +595,12 @@ class TimePicker extends StatelessWidget {
             }).toList(),
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         SizedBox(
           width: 80,
           child: DropdownButtonFormField<String>(
             isExpanded: true,
-            hint: Text('AM/PM'),
+            hint: const Text('AM/PM'),
             value: selectedAmPm,
             onChanged: onAmPmChanged,
             items: amPm.map((period) {

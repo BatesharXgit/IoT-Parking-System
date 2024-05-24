@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:parking_system/carpooling/carpoooling.dart';
 import 'package:parking_system/controller/theme_controller.dart';
-import 'package:parking_system/map_page.dart';
+import 'package:parking_system/pages/about_us.dart';
+import 'package:parking_system/pages/faq.dart';
 import 'package:parking_system/notifications.dart';
-import 'package:parking_system/parking_controller.dart';
-import 'package:parking_system/parking_slots.dart';
+import 'package:parking_system/controller/parking_controller.dart';
+import 'package:parking_system/pages/parking_home.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -46,7 +47,6 @@ class HomePage extends StatelessWidget {
         padding: const EdgeInsets.all(15),
         child: ListView(
           children: [
-            SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -136,37 +136,6 @@ class HomePage extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 14),
-            InkWell(
-              onTap: () {
-                // Get.to(ParkingHomePage());
-                Get.to(GoogleMapPage());
-              },
-              child: Container(
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.location_searching_outlined,
-                      size: 40,
-                    ),
-                    SizedBox(width: 30),
-                    Expanded(
-                      child: Text(
-                        "View Location",
-                        style: Theme.of(context).textTheme.headlineMedium,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
             SizedBox(
               height: 14,
             ),
@@ -198,7 +167,38 @@ class HomePage extends StatelessWidget {
             SizedBox(height: 14),
             InkWell(
               onTap: () {
-                Get.to(ParkingHomePage());
+                // Get.to(ParkingHomePage());
+                Get.to(AboutUsPage());
+              },
+              child: Container(
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.info,
+                      size: 40,
+                    ),
+                    SizedBox(width: 30),
+                    Expanded(
+                      child: Text(
+                        "About US",
+                        style: Theme.of(context).textTheme.headlineMedium,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 14),
+            InkWell(
+              onTap: () {
+                Get.to(FAQPage());
                 // Get.to(GoogleMapPage());
               },
               child: Container(
