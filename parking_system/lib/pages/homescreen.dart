@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:parking_system/carpooling/carpoooling.dart';
+import 'package:parking_system/carpooling/carpooling.dart';
 import 'package:parking_system/controller/theme_controller.dart';
 import 'package:parking_system/pages/about_us.dart';
 import 'package:parking_system/pages/faq.dart';
